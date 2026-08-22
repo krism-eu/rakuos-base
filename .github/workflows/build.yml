@@ -6,6 +6,10 @@ on:
       - main
   workflow_dispatch:
 
+concurrency:
+  group: rakuos-base-${{ github.ref }}
+  cancel-in-progress: true
+
 env:
   IMAGE_NAME: ghcr.io/krism-eu/rakuos-base
 
@@ -22,22 +26,8 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Log in to GHCR
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Set up Buildah
-        uses: redhat-actions/podman-login@v1
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Build base image
-        uses: redhat-actions/buildah-build@v2
+        uses: redhat-actions/buildah-build@v3
         with:
           image: rakuos-base
           tags: minimal-base
@@ -45,20 +35,20 @@ jobs:
             ./Containerfile
           context: .
 
-      - name: Test bootc image
-        run: |
-          podman run --rm \
-            --entrypoint bootc \
-            rakuos-base:minimal-base \
-            container lint
+      - name: Log in to GHCR
+        uses: redhat-actions/podman-login@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Tag image
         run: |
           podman tag \
             rakuos-base:minimal-base \
-            ${{ env.IMAGE_NAME }}:minimal-base
+            "${IMAGE_NAME}:minimal-base"
 
-      - name: Push base image
+      - name: Push image
         run: |
           podman push \
-            ${{ env.IMAGE_NAME }}:minimal-base
+            "${IMAGE_NAME}:minimal-base"
