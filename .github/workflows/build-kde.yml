@@ -5,7 +5,7 @@ on:
     branches:
       - main
     paths:
-      - "rakuos-kde/Containerfile"
+      - "rakuos-kde/**"
       - ".github/workflows/build-kde.yml"
   workflow_dispatch:
 
