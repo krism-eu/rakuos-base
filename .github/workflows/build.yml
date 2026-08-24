@@ -4,6 +4,11 @@ on:
   push:
     branches:
       - main
+    paths:
+      - 'Containerfile'
+      - 'build_files/**'
+      - 'system_files/**'
+      - '.github/workflows/build.yml'
   workflow_dispatch:
 
 concurrency:
